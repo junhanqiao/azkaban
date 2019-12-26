@@ -19,6 +19,9 @@ package azkaban.executor.selector;
 import azkaban.executor.ExecutableFlow;
 import azkaban.executor.Executor;
 import azkaban.executor.ExecutorInfo;
+import azkaban.executor.ExecutorManagerException;
+import azkaban.projectExecutor.ProjectExecutorLoader;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +37,7 @@ public final class ExecutorFilter extends CandidateFilter<Executor, ExecutableFl
   private static final String STATICREMAININGFLOWSIZE_FILTER_NAME = "StaticRemainingFlowSize";
   private static final String MINIMUMFREEMEMORY_FILTER_NAME = "MinimumFreeMemory";
   private static final String CPUSTATUS_FILTER_NAME = "CpuStatus";
+  private static final String PROJECT_HOST_FILTER_NAME = "ProjectHost";
   private static Map<String, FactorFilter<Executor, ExecutableFlow>> filterRepository = null;
 
   /**<pre>
@@ -47,6 +51,7 @@ public final class ExecutorFilter extends CandidateFilter<Executor, ExecutableFl
     filterRepository.put(STATICREMAININGFLOWSIZE_FILTER_NAME, getStaticRemainingFlowSizeFilter());
     filterRepository.put(MINIMUMFREEMEMORY_FILTER_NAME, getMinimumReservedMemoryFilter());
     filterRepository.put(CPUSTATUS_FILTER_NAME, getCpuStatusFilter());
+    filterRepository.put(PROJECT_HOST_FILTER_NAME, getProjectHostFilter());
   }
 
   /**
@@ -184,6 +189,27 @@ public final class ExecutorFilter extends CandidateFilter<Executor, ExecutableFl
             return stats.getCpuUsage() < MAX_CPU_CURRENT_USAGE;
           }
         });
+  }
+
+  private static FactorFilter<Executor, ExecutableFlow> getProjectHostFilter() {
+    return FactorFilter.create(PROJECT_HOST_FILTER_NAME, new FactorFilter.Filter<Executor, ExecutableFlow>() {
+      @Override
+      public boolean filterTarget(Executor filteringTarget, ExecutableFlow referencingObject) {
+        if (null == filteringTarget) {
+          logger.debug(String
+                  .format("%s : filtering out the target as it is null.", CPUSTATUS_FILTER_NAME));
+          return false;
+        }
+        Set<Integer> executorsForProject = null;
+        try {
+          Map<Integer, Set<Integer>> projectExecutors = ProjectExecutorLoader.getAllProjectExecutors();
+          executorsForProject = projectExecutors.get(referencingObject.getProjectId());
+        } catch (ExecutorManagerException e) {
+          logger.error("getAllProjectExecutors failed", e);
+        }
+        return executorsForProject == null ? false : executorsForProject.contains(filteringTarget.getId());
+      }
+    });
   }
 
   @Override
