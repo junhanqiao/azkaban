@@ -26,12 +26,12 @@ import java.util.Objects;
 public class ProjectExecutor{
 
   private int project_id;
-  private int executor_id;
+  private String host;
   private String description;
 
-  public ProjectExecutor(int project_id, int executor_id, String description) {
+  public ProjectExecutor(int project_id, String host, String description) {
     this.project_id = project_id;
-    this.executor_id = executor_id;
+    this.host = host;
     this.description = description;
   }
 
@@ -43,12 +43,12 @@ public class ProjectExecutor{
     this.project_id = project_id;
   }
 
-  public int getExecutor_id() {
-    return executor_id;
+  public String getHost() {
+    return host;
   }
 
-  public void setExecutor_id(int executor_id) {
-    this.executor_id = executor_id;
+  public void setHost(String host) {
+    this.host = host;
   }
 
   public String getDescription() {
@@ -65,11 +65,20 @@ public class ProjectExecutor{
     if (o == null || getClass() != o.getClass()) return false;
     ProjectExecutor that = (ProjectExecutor) o;
     return project_id == that.project_id &&
-            executor_id == that.executor_id;
+            host.equals(that.host);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(project_id, executor_id);
+    return Objects.hash(project_id, host);
+  }
+
+  @Override
+  public String toString() {
+    return "ProjectExecutor{" +
+            "project_id=" + project_id +
+            ", host='" + host + '\'' +
+            ", description='" + description + '\'' +
+            '}';
   }
 }

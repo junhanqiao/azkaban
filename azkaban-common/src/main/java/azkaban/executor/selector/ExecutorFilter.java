@@ -197,17 +197,17 @@ public final class ExecutorFilter extends CandidateFilter<Executor, ExecutableFl
       public boolean filterTarget(Executor filteringTarget, ExecutableFlow referencingObject) {
         if (null == filteringTarget) {
           logger.debug(String
-                  .format("%s : filtering out the target as it is null.", CPUSTATUS_FILTER_NAME));
+                  .format("%s : filtering out the target as it is null.", PROJECT_HOST_FILTER_NAME));
           return false;
         }
-        Set<Integer> executorsForProject = null;
+        Set<String> executorsForProject = null;
         try {
-          Map<Integer, Set<Integer>> projectExecutors = ProjectExecutorLoader.getAllProjectExecutors();
+          Map<Integer, Set<String>> projectExecutors = ProjectExecutorLoader.getAllProjectExecutors();
           executorsForProject = projectExecutors.get(referencingObject.getProjectId());
         } catch (ExecutorManagerException e) {
           logger.error("getAllProjectExecutors failed", e);
         }
-        return executorsForProject == null ? false : executorsForProject.contains(filteringTarget.getId());
+        return executorsForProject == null ? false : executorsForProject.contains(filteringTarget.getHost());
       }
     });
   }
